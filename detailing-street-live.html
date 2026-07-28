@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detailing Street — Business Suite</title>
+<style>
+  :root{
+    --ink:#0E1B24; --steel:#1C2E3A; --panel:#F5F7F8; --line:#DCE3E7;
+    --wax:#C8A24B; --wax-dk:#A6822F; --chrome:#5B7185; --paper:#FFFFFF;
+    --ok:#1E7A4C; --bad:#B23A2E; --mut:#6B7C88;
+    --shadow:0 1px 2px rgba(14,27,36,.06),0 8px 24px rgba(14,27,36,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:var(--panel);color:var(--ink)}
+  .mono{font-variant-numeric:tabular-nums;font-family:'Consolas','SF Mono',monospace}
+  .top{background:var(--ink);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:40}
+  .brand{font-weight:800;letter-spacing:.5px;font-size:18px}
+  .brand span{color:var(--wax)}
+  .top .sub{font-size:12px;color:#9FB2BF;margin-left:2px}
+  .top .spacer{flex:1}
+  .lockbtn{background:#22333F;color:#cdd;border:1px solid #34505f;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer}
+  .lockbtn:hover{background:#2b414e}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 18px 60px}
+  .hello{margin:6px 2px 20px}
+  .hello h1{margin:0;font-size:22px}
+  .hello p{margin:4px 0 0;color:var(--mut);font-size:13px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:14px}
+  .mod{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;position:relative;box-shadow:var(--shadow);transition:transform .12s,border-color .12s}
+  .mod:hover{transform:translateY(-3px);border-color:var(--wax)}
+  .mod .ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:19px;background:var(--panel);border:1px solid var(--line);margin-bottom:12px}
+  .mod h3{margin:0 0 3px;font-size:15px}
+  .mod p{margin:0;font-size:12px;color:var(--mut);line-height:1.4}
+  .mod .lk{position:absolute;top:14px;right:14px;font-size:12px;color:var(--chrome)}
+  .mod.ready .ic{background:#FBF6E9;border-color:#EAD9A6}
+  .mod.soon{opacity:.6}
+  .mod.soon:hover{transform:none;border-color:var(--line);cursor:not-allowed}
+  .tag{position:absolute;bottom:12px;right:12px;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--wax-dk);font-weight:700}
+  .tag.s{color:var(--mut)}
+  .gate{position:fixed;inset:0;background:rgba(14,27,36,.72);backdrop-filter:blur(4px);display:none;place-items:center;z-index:60}
+  .gate.on{display:grid}
+  .gatebox{background:#fff;border-radius:16px;padding:26px;width:350px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+  .gatebox .gic{width:48px;height:48px;border-radius:12px;background:var(--ink);color:var(--wax);display:grid;place-items:center;font-size:22px;margin-bottom:14px}
+  .gatebox h2{margin:0 0 2px;font-size:17px}
+  .gatebox p{margin:0 0 16px;font-size:12.5px;color:var(--mut)}
+  .gatebox input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px;margin-bottom:10px}
+  .gatebox input:focus{outline:2px solid var(--wax);border-color:var(--wax)}
+  .grow{display:flex;gap:8px}
+  .btn{border:none;border-radius:9px;padding:11px 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .btn.p{background:var(--ink);color:#fff;flex:1}
+  .btn.p:hover{background:var(--steel)}
+  .btn.g{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+  .err{color:var(--bad);font-size:12px;margin:-4px 0 10px;min-height:15px}
+  .ok{color:var(--ok);font-size:12px;margin:-4px 0 10px;min-height:15px}
+  .hint{font-size:11px;color:var(--chrome);margin-top:12px;text-align:center}
+  .forgot{font-size:11.5px;color:var(--chrome);text-align:center;margin-top:10px;cursor:pointer;text-decoration:underline}
+  .otpbox{background:#FBF6E9;border:1px solid #EAD9A6;border-radius:9px;padding:9px 11px;font-size:11.5px;color:#6b5518;margin-bottom:10px}
+  .mview{display:none}
+  .mview.on{display:block}
+  .crumb{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+  .crumb button.back{background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer}
+  .crumb button.back:hover{border-color:var(--wax)}
+  .crumb h2{margin:0;font-size:19px}
+  .crumb .lockmini{margin-left:auto;font-size:11px;color:var(--chrome);display:flex;align-items:center;gap:5px}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .search{flex:1;min-width:200px;position:relative}
+  .search input{width:100%;padding:10px 12px 10px 34px;border:1px solid var(--line);border-radius:9px;font-size:13px;background:#fff}
+  .search input:focus{outline:2px solid var(--wax);border-color:var(--wax)}
+  .search .mag{position:absolute;left:11px;top:9px;color:var(--mut);font-size:14px}
+  .btn.sm{padding:9px 13px;font-size:12.5px}
+  .btn.wax{background:var(--wax);color:#241c05}
+  .btn.wax:hover{background:var(--wax-dk);color:#fff}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+  .stat{background:#fff;padding:14px 16px}
+  .stat .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+  .stat .v{font-size:20px;font-weight:700;margin-top:3px}
+  .stat .v.in{color:var(--ok)} .stat .v.out{color:var(--bad)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{background:var(--steel);color:#dbe6ee;text-align:left;padding:10px 12px;font-size:11px;letter-spacing:.4px;text-transform:uppercase;font-weight:600}
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--line)}
+  tbody tr:hover{background:#FBFCFD}
+  tbody tr:last-child td{border-bottom:none}
+  .tnum{text-align:right}
+  .tin{color:var(--ok);font-weight:600}
+  .tout{color:var(--bad);font-weight:600}
+  .bal{font-weight:700}
+  .del{color:var(--mut);cursor:pointer;font-size:15px;border:none;background:none}
+  .del:hover{color:var(--bad)}
+  .empty{padding:40px 20px;text-align:center;color:var(--mut);font-size:13px}
+  .empty b{display:block;color:var(--ink);margin-bottom:4px;font-size:14px}
+  .addrow{display:grid;gap:8px;padding:12px;background:var(--panel);border-bottom:1px solid var(--line)}
+  .addrow.petty{grid-template-columns:130px 1fr 120px 120px 110px 40px}
+  .addrow.cash{grid-template-columns:125px 1fr 115px 115px 100px 110px 40px}
+  .addrow input,.addrow select{padding:9px;border:1px solid var(--line);border-radius:8px;font-size:12.5px;width:100%;background:#fff}
+  .addrow input:focus,.addrow select:focus{outline:2px solid var(--wax);border-color:var(--wax)}
+  .addrow .addbtn{background:var(--ink);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:18px;display:grid;place-items:center}
+  .addrow .addbtn:hover{background:var(--wax);color:#241c05}
+  @media(max-width:760px){.addrow.petty,.addrow.cash{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr}}
+  .setpw{font-size:11px;color:var(--chrome);cursor:pointer;text-decoration:underline;margin-left:6px}
+  .foot{text-align:center;color:var(--mut);font-size:11px;margin-top:26px}
+  .note{background:#FBF6E9;border:1px solid #EAD9A6;color:#6b5518;font-size:12px;padding:10px 13px;border-radius:10px;margin-bottom:14px}
+  .perTab{border:none;background:none;padding:7px 13px;border-radius:8px;font-size:12.5px;cursor:pointer;color:var(--mut);font-weight:600}
+  .perTab.active{background:var(--ink);color:#fff}
+  #loginScreen{position:fixed;inset:0;background:linear-gradient(135deg,#0E1B24,#1C2E3A);display:grid;place-items:center;z-index:200}
+  #loginBox{background:#fff;border-radius:16px;padding:30px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  #loginBox .lg{width:52px;height:52px;border-radius:13px;background:var(--ink);color:var(--wax);display:grid;place-items:center;font-size:24px;margin-bottom:16px}
+  #loginBox h2{margin:0 0 3px;font-size:19px}
+  #loginBox p{margin:0 0 18px;font-size:12.5px;color:var(--mut)}
+  #loginBox input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px;margin-bottom:10px}
+  #loginBox input:focus{outline:2px solid var(--wax);border-color:var(--wax)}
+  #loginErr{color:var(--bad);font-size:12px;margin:-2px 0 10px;min-height:15px}
+  #syncBadge{position:fixed;bottom:14px;right:14px;background:var(--ink);color:#cdd;font-size:11px;padding:7px 12px;border-radius:20px;z-index:100;opacity:0;transition:opacity .3s}
+  #syncBadge.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- OWNER LOGIN -->
+<div id="loginScreen">
+  <div id="loginBox">
+    <div class="lg">🔐</div>
+    <h2>Detailing Street</h2>
+    <p>Owner login — sign in to access the business suite.</p>
+    <input type="email" id="loginEmail" placeholder="Email" autocomplete="username">
+    <input type="password" id="loginPw" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <div id="loginErr"></div>
+    <button class="btn p" style="width:100%" onclick="doLogin()">Sign in</button>
+  </div>
+</div>
+<div id="syncBadge">saved ✓</div>
+
+<div class="top">
+  <div class="brand">DETAILING<span>·</span>STREET</div>
+  <div class="sub">Business Suite · Raipur</div>
+  <div class="spacer"></div>
+  <button class="lockbtn" onclick="lockAll()">🔒 Lock all</button>
+</div>
+
+<div class="wrap">
+  <div id="home">
+    <div class="hello">
+      <h1>Master Dashboard</h1>
+      <p>Each register is password-protected on its own. Opening one does not open the others.</p>
+    </div>
+    <div class="note">All 8 registers are live. Each has its own password and a WhatsApp-OTP reset. This is a working preview — data saves locally here, and moves to the Detailing Street Supabase project when wired up.</div>
+    <div class="grid" id="modgrid"></div>
+    <div class="foot">Detailing Street Business Suite · data saved locally in this preview</div>
+  </div>
+
+  <!-- ACCOUNTS SUMMARY -->
+  <div class="mview" id="view-summary">
+    <div class="crumb">
+      <button class="back" onclick="goHome()">← Dashboard</button>
+      <h2>Accounts Summary</h2>
+      <div class="lockmini">🔓 owner view · <span class="setpw" onclick="changePw('summary')">change password</span></div>
+    </div>
+
+    <div class="toolbar">
+      <label style="font-size:12px;color:var(--mut)">Financial Year
+        <select id="sumFY" onchange="renderSummary()" style="padding:8px 10px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;background:#fff;margin-left:6px"></select>
+      </label>
+      <div style="display:flex;gap:4px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:3px">
+        <button id="tabDaily" class="perTab" onclick="setPeriod('daily')">Daily</button>
+        <button id="tabMonthly" class="perTab active" onclick="setPeriod('monthly')">Monthly</button>
+        <button id="tabHalf" class="perTab" onclick="setPeriod('half')">Half-yearly</button>
+      </div>
+      <div style="flex:1"></div>
+      <button class="btn sm wax" onclick="exportSummary()">⬇ Export</button>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="stats" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat"><div class="l">Total Sales (FY)</div><div class="v mono" id="fySales">₹0</div></div>
+        <div class="stat"><div class="l">Received</div><div class="v in mono" id="fyRecv">₹0</div></div>
+        <div class="stat"><div class="l">Outstanding</div><div class="v out mono" id="fyOut">₹0</div></div>
+        <div class="stat"><div class="l">Net Cash Position</div><div class="v mono" id="fyCash">₹0</div></div>
+      </div>
+      <div class="stats" style="grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)">
+        <div class="stat"><div class="l">GST Sales</div><div class="v mono" id="fyGst">₹0</div></div>
+        <div class="stat"><div class="l">Non-GST Sales</div><div class="v mono" id="fyNon">₹0</div></div>
+        <div class="stat"><div class="l">Cash In (books)</div><div class="v in mono" id="fyCin">₹0</div></div>
+        <div class="stat"><div class="l">Cash Out (books)</div><div class="v out mono" id="fyCout">₹0</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="padding:11px 14px;border-bottom:1px solid var(--line);font-size:13px;font-weight:600" id="periodTitle">Monthly breakdown</div>
+      <div style="overflow-x:auto"><table style="min-width:640px">
+        <thead><tr><th id="colPeriod">Period</th><th class="tnum">Sales</th><th class="tnum">Received</th><th class="tnum">Outstanding</th><th class="tnum">Cash In</th><th class="tnum">Cash Out</th><th class="tnum">Closing Balance</th></tr></thead>
+        <tbody id="sumBody"></tbody>
+      </table></div>
+    </div>
+    <div class="foot">Final balances roll up from Customer &amp; Service (sales) + Cash Book &amp; Petty Cash (cash movement). Indian financial year, April–March. "Closing Balance" is the running cash position across the period.</div>
+  </div>
+
+  <!-- PETTY CASH -->
+  <div class="mview" id="view-petty">
+    <div class="crumb">
+      <button class="back" onclick="goHome()">← Dashboard</button>
+      <h2>Petty Cash Book</h2>
+      <div class="lockmini">🔓 unlocked · <span class="setpw" onclick="changePw('petty')">change password</span></div>
+    </div>
+    <div class="toolbar">
+      <div class="search"><span class="mag">🔍</span><input id="pettySearch" placeholder="Search particulars, mode, date…" oninput="renderPetty()"></div>
+      <button class="btn sm wax" onclick="exportSheet('petty')">⬇ Export CSV</button>
+    </div>
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="l">Total In</div><div class="v in mono" id="pIn">₹0</div></div>
+        <div class="stat"><div class="l">Total Out</div><div class="v out mono" id="pOut">₹0</div></div>
+        <div class="stat"><div class="l">Closing Balance</div><div class="v mono" id="pBal">₹0</div></div>
+      </div>
+      <div class="addrow petty">
+        <input type="date" id="pDate">
+        <input type="text" id="pPart" placeholder="Particulars (e.g. Tea / cleaning cloth)">
+        <input type="number" id="pIn2" placeholder="Cash In ₹" min="0">
+        <input type="number" id="pOut2" placeholder="Cash Out ₹" min="0">
+        <select id="pMode"><option>Cash</option><option>UPI</option><option>Card</option><option>Bank</option></select>
+        <button class="addbtn" onclick="addPetty()" title="Add entry">+</button>
+      </div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Date</th><th>Particulars</th><th class="tnum">Cash In</th><th class="tnum">Cash Out</th><th class="tnum">Balance</th><th>Mode</th><th></th></tr></thead>
+        <tbody id="pettyBody"></tbody>
+      </table></div>
+    </div>
+    <div class="foot">Worker advances recorded here flow into Payroll deductions in later stages.</div>
+  </div>
+
+  <!-- CASH BOOK -->
+  <div class="mview" id="view-cash">
+    <div class="crumb">
+      <button class="back" onclick="goHome()">← Dashboard</button>
+      <h2>Cash Book</h2>
+      <div class="lockmini">🔓 unlocked · <span class="setpw" onclick="changePw('cash')">change password</span></div>
+    </div>
+    <div class="toolbar">
+      <div class="search"><span class="mag">🔍</span><input id="cashSearch" placeholder="Search particulars, invoice, mode, date…" oninput="renderCash()"></div>
+      <button class="btn sm wax" onclick="exportSheet('cash')">⬇ Export CSV</button>
+    </div>
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="l">Total Cash In</div><div class="v in mono" id="cIn">₹0</div></div>
+        <div class="stat"><div class="l">Total Cash Out</div><div class="v out mono" id="cOut">₹0</div></div>
+        <div class="stat"><div class="l">Closing Balance</div><div class="v mono" id="cBal">₹0</div></div>
+      </div>
+      <div class="addrow cash">
+        <input type="date" id="cDate">
+        <input type="text" id="cPart" placeholder="Particulars">
+        <input type="number" id="cInV" placeholder="Cash In ₹" min="0">
+        <input type="number" id="cOutV" placeholder="Cash Out ₹" min="0">
+        <select id="cMode"><option>Cash</option><option>UPI</option><option>Card</option><option>Bank</option></select>
+        <input type="text" id="cInv" placeholder="Invoice #">
+        <button class="addbtn" onclick="addCash()" title="Add entry">+</button>
+      </div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Date</th><th>Particulars</th><th class="tnum">Cash In</th><th class="tnum">Cash Out</th><th class="tnum">Balance</th><th>Mode</th><th>Invoice</th><th></th></tr></thead>
+        <tbody id="cashBody"></tbody>
+      </table></div>
+    </div>
+    <div class="foot">The Cash Book feeds the till-date sales &amp; accounts summary.</div>
+  </div>
+
+  <!-- CUSTOMER & SERVICE -->
+  <div class="mview" id="view-cust">
+    <div class="crumb">
+      <button class="back" onclick="goHome()">← Dashboard</button>
+      <h2>Customer &amp; Service</h2>
+      <div class="lockmini">🔓 unlocked · <span class="setpw" onclick="changePw('cust')">change password</span></div>
+    </div>
+    <div class="toolbar">
+      <div class="search"><span class="mag">🔍</span><input id="custSearch" placeholder="Search name, mobile, vehicle no, particulars, invoice…" oninput="renderCust()"></div>
+      <select id="custFilter" onchange="renderCust()" style="padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;background:#fff">
+        <option value="all">All entries</option><option value="today">Today</option><option value="month">This month</option>
+        <option value="due">Balance due</option><option value="Progress">In progress</option>
+      </select>
+      <button class="btn sm wax" onclick="exportSheet('cust')">⬇ Export CSV</button>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="stats" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat"><div class="l">Till-date Sales</div><div class="v mono" id="sTotal">₹0</div></div>
+        <div class="stat"><div class="l">Received</div><div class="v in mono" id="sPaid">₹0</div></div>
+        <div class="stat"><div class="l">Outstanding</div><div class="v out mono" id="sDue">₹0</div></div>
+        <div class="stat"><div class="l">This Month</div><div class="v mono" id="sMonth">₹0</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="padding:12px;background:var(--panel);border-bottom:1px solid var(--line);display:grid;gap:8px;grid-template-columns:repeat(4,1fr)">
+        <input type="date" id="uDate">
+        <input type="text" id="uName" placeholder="Customer name">
+        <input type="text" id="uMobile" placeholder="Mobile">
+        <input type="text" id="uAddr" placeholder="Address">
+        <input type="text" id="uPart" placeholder="Particulars (goods / service)">
+        <input type="text" id="uVeh" placeholder="Vehicle">
+        <input type="text" id="uVehNo" placeholder="Vehicle number">
+        <select id="uGst"><option value="nongst">Non-GST</option><option value="gst">GST</option></select>
+        <input type="time" id="uEntry" placeholder="Entry">
+        <input type="time" id="uExit" placeholder="Exit">
+        <input type="number" id="uRate" placeholder="Rate ₹" min="0" oninput="calcBal()">
+        <input type="number" id="uPay" placeholder="Payment ₹" min="0" oninput="calcBal()">
+        <input type="text" id="uBal" placeholder="Balance ₹" readonly style="background:#eef2f4">
+        <select id="uMode"><option>Cash</option><option>UPI</option><option>Card</option><option>Bank</option></select>
+        <input type="text" id="uInv" placeholder="Invoice #">
+        <select id="uStatus"><option>Delivered</option><option>Progress</option><option>Booked</option></select>
+        <input type="text" id="uFeed" placeholder="Feedback">
+        <input type="text" id="uRemark" placeholder="Remark">
+        <button class="btn p" style="grid-column:span 2" onclick="addCust()">+ Add service entry</button>
+      </div>
+      <div style="overflow-x:auto"><table style="min-width:1500px">
+        <thead><tr><th>Date</th><th>Name</th><th>Mobile</th><th>Address</th><th>Particulars</th><th>Vehicle</th><th>Vehicle No</th><th>Entry</th><th>Exit</th><th class="tnum">Rate</th><th class="tnum">Payment</th><th class="tnum">Balance</th><th>Mode</th><th>Invoice</th><th>GST</th><th>Status</th><th>Feedback</th><th>Remark</th><th></th></tr></thead>
+        <tbody id="custBody"></tbody>
+      </table></div>
+    </div>
+    <div class="foot">Full record (address, entry/exit, mode, feedback, remark) is kept per entry &amp; included in export. This ledger is the source for the sales summary.</div>
+  </div>
+
+  <!-- INVOICE -->
+  <div class="mview" id="view-inv">
+    <div class="crumb">
+      <button class="back" onclick="goHome()">← Dashboard</button>
+      <h2>Invoice</h2>
+      <div class="lockmini">🔓 unlocked · <span class="setpw" onclick="editSeller()">seller details</span> · <span class="setpw" onclick="changePw('inv')">change password</span></div>
+    </div>
+    <div class="toolbar">
+      <div class="search"><span class="mag">🔍</span><input id="invSearch" placeholder="Search customer, vehicle, invoice #…" oninput="renderInvList()"></div>
+      <button class="btn sm wax" onclick="editSeller()">⚙ Seller details</button>
+    </div>
+    <div class="note" id="sellerWarn" style="display:none">⚠ Seller details not set yet — tap <b>Seller details</b> so your GSTIN &amp; address print on invoices.</div>
+    <div class="card">
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Date</th><th>Customer</th><th>Vehicle No</th><th>Particulars</th><th class="tnum">Amount</th><th>Type</th><th>Invoice #</th><th>Saved</th><th>Actions</th></tr></thead>
+        <tbody id="invBody"></tbody>
+      </table></div>
+    </div>
+    <div class="foot">Preview shows on tap. The invoice is stored to database &amp; downloaded only when you tap 💾 Save. GST bills split CGST/SGST @9%; non-GST bills print the same layout without tax rows.</div>
+  </div>
+
+  <!-- BOOKINGS / ADVANCE -->
+  <div class="mview" id="view-book">
+    <div class="crumb">
+      <button class="back" onclick="goHome()">← Dashboard</button>
+      <h2>Bookings / Advance</h2>
+      <div class="lockmini">🔓 unlocked · <span class="setpw" onclick="changePw('book')">change password</span></div>
+    </div>
+    <div class="toolbar">
+      <div class="search"><span class="mag">🔍</span><input id="bookSearch" placeholder="Search name, mobile, vehicle no, service…" oninput="renderBook()"></div>
+      <select id="bookFilter" onchange="renderBook()" style="padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;background:#fff">
+        <option value="pending">Pending</option><option value="all">All</option><option value="transferred">Transferred</option>
+      </select>
+      <button class="btn sm wax" onclick="exportSheet('book')">⬇ Export CSV</button>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="stats">
+        <div class="stat"><div class="l">Pending bookings</div><div class="v mono" id="bPend">0</div></div>
+        <div class="stat"><div class="l">Advance collected</div><div class="v in mono" id="bAdv">₹0</div></div>
+        <div class="stat"><div class="l">Expected revenue</div><div class="v mono" id="bExp">₹0</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="padding:12px;background:var(--panel);border-bottom:1px solid var(--line);display:grid;gap:8px;grid-template-columns:repeat(4,1fr)">
+        <input type="date" id="bAppt" title="Appointment date">
+        <input type="text" id="bName" placeholder="Name">
+        <input type="text" id="bMobile" placeholder="Mobile">
+        <input type="email" id="bEmail" placeholder="Email">
+        <input type="text" id="bAddr" placeholder="Address">
+        <input type="text" id="bZip" placeholder="Zipcode">
+        <input type="text" id="bService" placeholder="Service">
+        <input type="text" id="bColor" placeholder="Vehicle colour">
+        <input type="text" id="bVehNo" placeholder="Vehicle number">
+        <input type="text" id="bBookedBy" placeholder="Booked by">
+        <input type="number" id="bRate" placeholder="Rate ₹" min="0">
+        <input type="number" id="bAdvance" placeholder="Advance ₹" min="0">
+        <select id="bMode"><option>Cash</option><option>UPI</option><option>Card</option><option>Bank</option></select>
+        <select id="bArrived"><option value="No">Vehicle: Not arrived</option><option value="Yes">Vehicle: Arrived</option></select>
+        <input type="date" id="bDelivery" title="Delivery date">
+        <input type="text" id="bWarranty" placeholder="Warranty">
+        <input type="text" id="bRemark" placeholder="Remark">
+        <button class="btn p" style="grid-column:span 2" onclick="addBook()">+ Add booking</button>
+      </div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Appt Date</th><th>Name</th><th>Mobile</th><th>Service</th><th>Vehicle No</th><th class="tnum">Rate</th><th class="tnum">Advance</th><th>Arrived</th><th>Action</th></tr></thead>
+        <tbody id="bookBody"></tbody>
+      </table></div>
+    </div>
+    <div class="foot">Advance is stored with the booking. "Transfer" moves the booking into Customer &amp; Service with all details &amp; advance carried as payment, then marks it transferred so it isn't billed twice.</div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div class="mview" id="view-stock">
+    <div class="crumb">
+      <button class="back" onclick="goHome()">← Dashboard</button>
+      <h2>Inventory</h2>
+      <div class="lockmini">🔓 unlocked · <span class="setpw" onclick="changePw('stock')">change password</span></div>
+    </div>
+    <div class="toolbar">
+      <div class="search"><span class="mag">🔍</span><input id="stockSearch" placeholder="Search product…" oninput="renderStock()"></div>
+      <select id="stockFilter" onchange="renderStock()" style="padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;background:#fff">
+        <option value="all">All products</option><option value="low">Low / out of stock</option>
+      </select>
+      <button class="btn sm wax" onclick="exportSheet('stock')">⬇ Export CSV</button>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="stats">
+        <div class="stat"><div class="l">Products tracked</div><div class="v mono" id="stCount">0</div></div>
+        <div class="stat"><div class="l">Total received</div><div class="v in mono" id="stRecv">0</div></div>
+        <div class="stat"><div class="l">Total consumed</div><div class="v out mono" id="stCons">0</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="padding:12px;background:var(--panel);border-bottom:1px solid var(--line);display:grid;gap:8px;grid-template-columns:1fr 130px 110px 40px">
+        <input type="text" id="stName" placeholder="New product name (e.g. PPF Roll, Shampoo)">
+        <input type="text" id="stUnit" placeholder="Unit (pc/ltr/roll)">
+        <input type="number" id="stOpen" placeholder="Opening qty" min="0">
+        <button class="addbtn" onclick="addProduct()" title="Add product">+</button>
+      </div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Product</th><th>Unit</th><th class="tnum">Received</th><th class="tnum">Consumed</th><th class="tnum">Closing Stock</th><th>Update stock</th><th></th></tr></thead>
+        <tbody id="stockBody"></tbody>
+      </table></div>
+    </div>
+    <div class="foot">Closing stock = Opening + Received − Consumed. Use +/− to log stock received or consumed. When wired to Supabase, completing a service can auto-deduct consumables.</div>
+  </div>
+
+  <!-- ATTENDANCE & PAYROLL -->
+  <div class="mview" id="view-attend">
+    <div class="crumb">
+      <button class="back" onclick="goHome()">← Dashboard</button>
+      <h2>Attendance &amp; Payroll</h2>
+      <div class="lockmini">🔓 unlocked · <span class="setpw" onclick="changePw('attend')">change password</span></div>
+    </div>
+    <div class="toolbar">
+      <input type="month" id="payMonth" onchange="renderAttend()" style="padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;background:#fff">
+      <div class="search"><span class="mag">🔍</span><input id="empSearch" placeholder="Search employee…" oninput="renderAttend()"></div>
+      <button class="btn sm wax" onclick="exportSheet('pay')">⬇ Export payroll</button>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div style="padding:12px;background:var(--panel);border-bottom:1px solid var(--line);display:grid;gap:8px;grid-template-columns:1fr 160px 40px">
+        <input type="text" id="empName" placeholder="New employee name">
+        <input type="number" id="empSalary" placeholder="Monthly salary ₹" min="0">
+        <button class="addbtn" onclick="addEmp()" title="Add employee">+</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="l">Employees</div><div class="v mono" id="pEmpCount">0</div></div>
+        <div class="stat"><div class="l">Gross payroll (month)</div><div class="v mono" id="pGross">₹0</div></div>
+        <div class="stat"><div class="l">Net payable (after advances)</div><div class="v in mono" id="pNet">₹0</div></div>
+      </div>
+    </div>
+
+    <div id="attendCards"></div>
+    <div class="foot">Payable = Salary × (Present + ½·Half-day) ÷ days in month. Advances are auto-pulled from Cash Book + Petty Cash where the particulars mention the employee's name (e.g. "Advance Ramesh"). Mark days by tapping P / H / A.</div>
+  </div>
+
+  <!-- FREE SERVICE TRACKER -->
+  <div class="mview" id="view-free">
+    <div class="crumb">
+      <button class="back" onclick="goHome()">← Dashboard</button>
+      <h2>Free Service Tracker</h2>
+      <div class="lockmini">🔓 unlocked · <span class="setpw" onclick="changePw('free')">change password</span></div>
+    </div>
+    <div class="toolbar">
+      <div class="search"><span class="mag">🔍</span><input id="freeSearch" placeholder="Search customer, vehicle…" oninput="renderFree()"></div>
+      <select id="freeFilter" onchange="renderFree()" style="padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;background:#fff">
+        <option value="all">All plans</option><option value="due">Due now</option><option value="active">Active</option><option value="done">Completed</option>
+      </select>
+      <button class="btn sm wax" onclick="exportSheet('free')">⬇ Export CSV</button>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="stats">
+        <div class="stat"><div class="l">Active plans</div><div class="v mono" id="fActive">0</div></div>
+        <div class="stat"><div class="l">Services due now</div><div class="v out mono" id="fDue">0</div></div>
+        <div class="stat"><div class="l">Free services availed</div><div class="v in mono" id="fAvailed">0</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="padding:12px;background:var(--panel);border-bottom:1px solid var(--line);display:grid;gap:8px;grid-template-columns:1fr 130px 1fr 110px 90px 90px auto">
+        <input type="text" id="fName" placeholder="Customer name">
+        <input type="text" id="fMobile" placeholder="WhatsApp mobile">
+        <input type="text" id="fVeh" placeholder="Vehicle / vehicle no">
+        <input type="text" id="fService" placeholder="Service (e.g. PPF)">
+        <input type="number" id="fCount" placeholder="Free #" min="1" title="How many free services">
+        <input type="number" id="fInterval" placeholder="Every (days)" min="1" title="Interval in days">
+        <button class="btn p" onclick="addFree()">+ Add plan</button>
+      </div>
+      <div id="freeCards" style="padding:4px"></div>
+    </div>
+    <div class="foot">Set the number of free services &amp; interval. The next due date is computed automatically; when due, a WhatsApp reminder is prepared for the customer. Tap ✓ to mark a free service availed — the next due date rolls forward.</div>
+  </div>
+</div>
+
+<!-- WHATSAPP REMINDER MODAL -->
+<div class="gate" id="waModal">
+  <div class="gatebox" style="width:380px">
+    <div class="gic">📲</div>
+    <h2>WhatsApp reminder</h2>
+    <p id="waTo"></p>
+    <div style="background:#E7F3EA;border:1px solid #BEDCC7;border-radius:10px;padding:12px;font-size:13px;line-height:1.5;white-space:pre-wrap" id="waMsg"></div>
+    <div class="otpbox" style="margin-top:10px">Preview: in production this sends via your WhatsApp Business API (Edge Function). Here it's shown for review.</div>
+    <div class="grow" style="margin-top:6px">
+      <button class="btn g" onclick="document.getElementById('waModal').classList.remove('on')">Close</button>
+      <button class="btn p" onclick="markReminderSent()">Mark sent</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYSLIP MODAL -->
+<div class="gate" id="slipModal">
+  <div style="background:#fff;border-radius:14px;width:min(560px,95vw);max-height:92vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    <div style="display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff">
+      <b style="flex:1;align-self:center">Payslip</b>
+      <button class="btn g sm" onclick="document.getElementById('slipModal').classList.remove('on')">Close</button>
+      <button class="btn sm wax" onclick="downloadSlip()">⬇ Download</button>
+    </div>
+    <div id="slipPaper" style="padding:34px 38px"></div>
+  </div>
+</div>
+
+<!-- INVOICE PREVIEW MODAL -->
+<div class="gate" id="invModal">
+  <div style="background:#fff;border-radius:14px;width:min(760px,95vw);max-height:92vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    <div style="display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:2">
+      <b style="flex:1;align-self:center">Invoice preview</b>
+      <button class="btn g sm" onclick="closeInv()">Close</button>
+      <button class="btn sm wax" onclick="downloadInv()">⬇ Download</button>
+      <button class="btn p sm" style="flex:none" onclick="saveInv()">💾 Save to database</button>
+    </div>
+    <div id="invPaper" style="padding:38px 40px"></div>
+  </div>
+</div>
+
+<!-- GATE with OTP reset -->
+<div class="gate" id="gate">
+  <div class="gatebox">
+    <!-- LOGIN VIEW -->
+    <div id="gateLogin">
+      <div class="gic" id="gateIc">🔐</div>
+      <h2 id="gateTitle">Enter password</h2>
+      <p id="gateDesc">This register is locked.</p>
+      <input type="password" id="gatePw" placeholder="Password" onkeydown="if(event.key==='Enter')submitGate()">
+      <div class="err" id="gateErr"></div>
+      <div class="grow">
+        <button class="btn g" onclick="closeGate()">Cancel</button>
+        <button class="btn p" onclick="submitGate()">Unlock</button>
+      </div>
+      <div class="forgot" onclick="startReset()">Forgot password? Reset via WhatsApp OTP</div>
+      <div class="hint" id="gateHint"></div>
+    </div>
+    <!-- RESET VIEW -->
+    <div id="gateReset" style="display:none">
+      <div class="gic">📲</div>
+      <h2>Reset via WhatsApp OTP</h2>
+      <p id="resetStep">A one-time code will be sent to the registered WhatsApp number for this register.</p>
+      <div id="resetPhoneWrap">
+        <input type="tel" id="resetPhone" placeholder="WhatsApp number (e.g. 98xxxxxxxx)">
+        <div class="err" id="resetErr"></div>
+        <div class="grow">
+          <button class="btn g" onclick="cancelReset()">Back</button>
+          <button class="btn p" onclick="sendOtp()">Send OTP</button>
+        </div>
+      </div>
+      <div id="resetOtpWrap" style="display:none">
+        <div class="otpbox" id="otpSim"></div>
+        <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
+        <input type="password" id="newPwInput" placeholder="New password for this register">
+        <div class="err" id="otpErr"></div>
+        <div class="grow">
+          <button class="btn g" onclick="cancelReset()">Back</button>
+          <button class="btn p" onclick="verifyOtp()">Verify &amp; reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ===== SUPABASE CONNECTION =====
+const SUPABASE_URL = "https://vsmhndcolybuacqcjqtq.supabase.co";
+const SUPABASE_KEY = "sb_publishable_xkhe7Q3-4WK36eW3bNrOLw_4cDkwB07";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const MODULES = [
+  {id:'summary', name:'Accounts Summary', icon:'📊', desc:'Final balances — daily, monthly, half-yearly, by financial year.', ready:true, hero:true},
+  {id:'petty',   name:'Petty Cash Book', icon:'🪙', desc:'Small daily in/out — tea, cloth, sundry expenses.', ready:true},
+  {id:'cash',    name:'Cash Book',       icon:'📒', desc:'Main cash in / out / balance with invoice ref.', ready:true},
+  {id:'cust',    name:'Customer & Service', icon:'🚗', desc:'Service ledger — entry, exit, rate, payment.', ready:true},
+  {id:'book',    name:'Bookings / Advance', icon:'📅', desc:'Advance bookings, then transfer to services.', ready:true},
+  {id:'inv',     name:'Invoice (GST / Non-GST)', icon:'🧾', desc:'Generate & download tax invoices on demand.', ready:true},
+  {id:'stock',   name:'Inventory', icon:'📦', desc:'Product received, consumed & closing stock.', ready:true},
+  {id:'free',    name:'Free Service Tracker', icon:'🎁', desc:'Due reminders on WhatsApp + availed tick.', ready:true},
+  {id:'attend',  name:'Attendance & Payroll', icon:'👷', desc:'Present / half-day, monthly salary & advances.', ready:true},
+];
+const DEFAULT_PW = {summary:'admin123', petty:'petty123', cash:'cash123', cust:'cust123', book:'book123', inv:'inv123', stock:'stock123', free:'free123', attend:'pay123'};
+
+let pettyData=[], cashData=[], custData=[], bookData=[], stockData=[], empData=[], attendData={}, freeData=[], pendingModule=null, activeOtp=null;
+
+// ===== SUPABASE-BACKED STORAGE =====
+// All app data is stored as rows in the app_data table (key -> json value).
+// This keeps every module's existing logic intact while persisting to the cloud.
+let _cache = {};   // in-memory mirror, loaded once after login
+
+function showSync(){ const b=document.getElementById('syncBadge'); b.classList.add('show'); clearTimeout(b._t); b._t=setTimeout(()=>b.classList.remove('show'),1200); }
+
+async function sGet(k){
+  if(k in _cache) return _cache[k];
+  try{
+    const { data } = await sb.from('app_data').select('value').eq('key',k).maybeSingle();
+    const v = data ? data.value : null;
+    _cache[k] = v;
+    return v;
+  }catch(e){ return _cache[k] ?? null; }
+}
+async function sSet(k,v){
+  _cache[k] = v;
+  try{
+    await sb.from('app_data').upsert({ key:k, value:v, updated_at:new Date().toISOString() });
+    showSync();
+  }catch(e){ console.error('save failed',e); }
+}
+// preload all app_data rows into cache after login (so renders are instant)
+async function preloadData(){
+  try{
+    const { data } = await sb.from('app_data').select('key,value');
+    _cache = {};
+    (data||[]).forEach(r=> _cache[r.key]=r.value);
+  }catch(e){ _cache={}; }
+}
+
+// ===== OWNER LOGIN =====
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pw=document.getElementById('loginPw').value;
+  document.getElementById('loginErr').textContent='';
+  if(!email||!pw){ document.getElementById('loginErr').textContent='Enter email and password.'; return; }
+  const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+  if(error){ document.getElementById('loginErr').textContent='Login failed: '+error.message; return; }
+  await startApp();
+}
+async function startApp(){
+  document.getElementById('loginScreen').style.display='none';
+  await preloadData();
+  await loadAll();
+  renderHome();
+}
+async function checkSession(){
+  const { data } = await sb.auth.getSession();
+  if(data.session){ await startApp(); }
+}
+async function getPw(id){ return (await sGet('pw:'+id))||DEFAULT_PW[id]; }
+async function setPw(id,v){ await sSet('pw:'+id,v); }
+async function getPhone(id){ return (await sGet('phone:'+id))||''; }
+async function setPhone(id,v){ await sSet('phone:'+id,v); }
+
+function money(n){ return '₹'+Number(n||0).toLocaleString('en-IN'); }
+function fmtDate(d){ if(!d)return''; const [y,m,dd]=d.split('-'); return `${dd}/${m}/${y}`; }
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function renderHome(){
+  const g=document.getElementById('modgrid'); g.innerHTML='';
+  MODULES.forEach(m=>{
+    const d=document.createElement('div');
+    d.className='mod '+(m.ready?'ready':'soon')+(m.hero?' hero':'');
+    if(m.hero){
+      d.style.cssText='grid-column:1/-1;background:linear-gradient(135deg,#0E1B24,#1C2E3A);color:#fff;border-color:#34505f';
+      d.innerHTML=`<div class="lk" style="color:var(--wax)">🔒</div><div class="ic" style="background:rgba(200,162,75,.15);border-color:var(--wax)">${m.icon}</div><h3 style="color:#fff;font-size:17px">${m.name}</h3><p style="color:#9FB2BF">${m.desc}</p><span class="tag" style="color:var(--wax)">Owner view</span>`;
+    } else {
+      d.innerHTML=`<div class="lk">🔒</div><div class="ic">${m.icon}</div><h3>${m.name}</h3><p>${m.desc}</p><span class="tag ${m.ready?'':'s'}">${m.ready?'Ready':'Coming next'}</span>`;
+    }
+    if(m.ready) d.onclick=()=>openGate(m);
+    g.appendChild(d);
+  });
+}
+
+// ---- gate ----
+function showLoginView(){ document.getElementById('gateLogin').style.display='block'; document.getElementById('gateReset').style.display='none'; }
+function openGate(m){
+  pendingModule=m; showLoginView();
+  document.getElementById('gateIc').textContent=m.icon;
+  document.getElementById('gateTitle').textContent='Unlock '+m.name;
+  document.getElementById('gateDesc').textContent='This register has its own password. It won\u2019t open any other register.';
+  document.getElementById('gateHint').textContent='Preview default: "'+DEFAULT_PW[m.id]+'"';
+  document.getElementById('gatePw').value='';
+  document.getElementById('gateErr').textContent='';
+  document.getElementById('gate').classList.add('on');
+  setTimeout(()=>document.getElementById('gatePw').focus(),50);
+}
+function closeGate(){ document.getElementById('gate').classList.remove('on'); pendingModule=null; }
+async function submitGate(){
+  if(!pendingModule) return;
+  const entered=document.getElementById('gatePw').value;
+  const { data, error } = await sb.rpc('verify_gate', { p_module: pendingModule.id, p_password: entered });
+  if(!error && data===true){ const mid=pendingModule.id; closeGate(); openModule(mid); }
+  else document.getElementById('gateErr').textContent='Wrong password for this register.';
+}
+async function changePw(id){
+  const a=prompt('Current password for this register:');
+  if(a===null) return;
+  const n=prompt('New password for this register:');
+  if(!n || !n.trim()) return;
+  const { data, error } = await sb.rpc('change_gate_pw', { p_module:id, p_old:a, p_new:n.trim() });
+  if(!error && data===true) alert('Password updated for this register.');
+  else alert('Incorrect current password.');
+}
+
+// ---- OTP reset ----
+async function startReset(){
+  document.getElementById('gateLogin').style.display='none';
+  document.getElementById('gateReset').style.display='block';
+  document.getElementById('resetPhoneWrap').style.display='block';
+  document.getElementById('resetOtpWrap').style.display='none';
+  document.getElementById('resetErr').textContent='';
+  document.getElementById('resetStep').textContent='Enter the WhatsApp number registered for the "'+pendingModule.name+'" register.';
+  const saved=await getPhone(pendingModule.id);
+  document.getElementById('resetPhone').value=saved||'';
+}
+function cancelReset(){ showLoginView(); activeOtp=null; }
+async function sendOtp(){
+  const phone=document.getElementById('resetPhone').value.trim();
+  if(!/^\d{10}$/.test(phone.replace(/\D/g,'').slice(-10))){ document.getElementById('resetErr').textContent='Enter a valid 10-digit WhatsApp number.'; return; }
+  await setPhone(pendingModule.id, phone);
+  activeOtp=String(Math.floor(100000+Math.random()*900000));
+  document.getElementById('resetPhoneWrap').style.display='none';
+  document.getElementById('resetOtpWrap').style.display='block';
+  document.getElementById('otpInput').value=''; document.getElementById('newPwInput').value=''; document.getElementById('otpErr').textContent='';
+  // PREVIEW ONLY: OTP shown on-screen. In production this is sent via WhatsApp API from a Supabase Edge Function.
+  document.getElementById('otpSim').innerHTML='<b>Preview mode:</b> in production this 6-digit code is delivered to WhatsApp '+phone+'. Here it is shown for testing → <b style="font-size:14px">'+activeOtp+'</b>';
+}
+async function verifyOtp(){
+  const code=document.getElementById('otpInput').value.trim();
+  const npw=document.getElementById('newPwInput').value.trim();
+  if(code!==activeOtp){ document.getElementById('otpErr').textContent='Incorrect OTP.'; return; }
+  if(!npw){ document.getElementById('otpErr').textContent='Enter a new password.'; return; }
+  await setPw(pendingModule.id, npw);
+  activeOtp=null;
+  alert('Password reset for "'+pendingModule.name+'". Use the new password to unlock.');
+  showLoginView();
+  document.getElementById('gatePw').value=''; document.getElementById('gateErr').textContent='';
+}
+
+// ---- nav ----
+function goHome(){ document.querySelectorAll('.mview').forEach(v=>v.classList.remove('on')); document.getElementById('home').style.display='block'; }
+function lockAll(){ goHome(); alert('All registers locked. Each will ask for its own password again.'); }
+function openModule(id){
+  document.getElementById('home').style.display='none';
+  if(id==='summary'){ document.getElementById('view-summary').classList.add('on'); initSummary(); }
+  if(id==='petty'){ document.getElementById('view-petty').classList.add('on'); if(!document.getElementById('pDate').value) document.getElementById('pDate').valueAsDate=new Date(); renderPetty(); }
+  if(id==='cash'){ document.getElementById('view-cash').classList.add('on'); if(!document.getElementById('cDate').value) document.getElementById('cDate').valueAsDate=new Date(); renderCash(); }
+  if(id==='cust'){ document.getElementById('view-cust').classList.add('on'); if(!document.getElementById('uDate').value) document.getElementById('uDate').valueAsDate=new Date(); renderCust(); }
+  if(id==='inv'){ document.getElementById('view-inv').classList.add('on'); renderInvList(); }
+  if(id==='book'){ document.getElementById('view-book').classList.add('on'); if(!document.getElementById('bAppt').value) document.getElementById('bAppt').valueAsDate=new Date(); renderBook(); }
+  if(id==='stock'){ document.getElementById('view-stock').classList.add('on'); renderStock(); }
+  if(id==='attend'){ document.getElementById('view-attend').classList.add('on'); if(!document.getElementById('payMonth').value) document.getElementById('payMonth').value=new Date().toISOString().slice(0,7); renderAttend(); }
+  if(id==='free'){ document.getElementById('view-free').classList.add('on'); renderFree(); }
+}
+
+// ---- petty ----
+async function loadAll(){ pettyData=await sGet('petty:data')||[]; cashData=await sGet('cash:data')||[]; custData=await sGet('cust:data')||[]; bookData=await sGet('book:data')||[]; stockData=await sGet('stock:data')||[]; empData=await sGet('emp:data')||[]; attendData=await sGet('attend:data')||{}; freeData=await sGet('free:data')||[]; }
+async function addPetty(){
+  const date=document.getElementById('pDate').value, part=document.getElementById('pPart').value.trim();
+  const cin=parseFloat(document.getElementById('pIn2').value)||0, cout=parseFloat(document.getElementById('pOut2').value)||0, mode=document.getElementById('pMode').value;
+  if(!date||!part){ alert('Date and particulars are required.'); return; }
+  if(cin===0&&cout===0){ alert('Enter a Cash In or Cash Out amount.'); return; }
+  pettyData.push({id:Date.now(),date,part,cin,cout,mode});
+  await sSet('petty:data',pettyData);
+  document.getElementById('pPart').value='';document.getElementById('pIn2').value='';document.getElementById('pOut2').value='';
+  renderPetty();
+}
+async function delPetty(id){ pettyData=pettyData.filter(r=>r.id!==id); await sSet('petty:data',pettyData); renderPetty(); }
+function renderPetty(){
+  const q=(document.getElementById('pettySearch').value||'').toLowerCase();
+  const sorted=[...pettyData].sort((a,b)=> a.date===b.date?a.id-b.id:a.date.localeCompare(b.date));
+  let run=0,tin=0,tout=0; const wb=sorted.map(r=>{run+=r.cin-r.cout;tin+=r.cin;tout+=r.cout;return {...r,bal:run};});
+  document.getElementById('pIn').textContent=money(tin);document.getElementById('pOut').textContent=money(tout);document.getElementById('pBal').textContent=money(run);
+  const shown=wb.filter(r=>!q||r.part.toLowerCase().includes(q)||r.mode.toLowerCase().includes(q)||r.date.includes(q));
+  const body=document.getElementById('pettyBody');
+  if(!shown.length){ body.innerHTML=`<tr><td colspan="7"><div class="empty"><b>${pettyData.length?'No matches':'No entries yet'}</b>${pettyData.length?'Try a different search.':'Add your first petty cash entry above.'}</div></td></tr>`; return; }
+  body.innerHTML=shown.map(r=>`<tr><td class="mono">${fmtDate(r.date)}</td><td>${esc(r.part)}</td><td class="tnum mono ${r.cin?'tin':''}">${r.cin?money(r.cin):'—'}</td><td class="tnum mono ${r.cout?'tout':''}">${r.cout?money(r.cout):'—'}</td><td class="tnum mono bal">${money(r.bal)}</td><td>${r.mode}</td><td><button class="del" onclick="delPetty(${r.id})">✕</button></td></tr>`).join('');
+}
+
+// ---- cash ----
+async function addCash(){
+  const date=document.getElementById('cDate').value, part=document.getElementById('cPart').value.trim();
+  const cin=parseFloat(document.getElementById('cInV').value)||0, cout=parseFloat(document.getElementById('cOutV').value)||0;
+  const mode=document.getElementById('cMode').value, inv=document.getElementById('cInv').value.trim();
+  if(!date||!part){ alert('Date and particulars are required.'); return; }
+  if(cin===0&&cout===0){ alert('Enter a Cash In or Cash Out amount.'); return; }
+  cashData.push({id:Date.now(),date,part,cin,cout,mode,inv});
+  await sSet('cash:data',cashData);
+  document.getElementById('cPart').value='';document.getElementById('cInV').value='';document.getElementById('cOutV').value='';document.getElementById('cInv').value='';
+  renderCash();
+}
+async function delCash(id){ cashData=cashData.filter(r=>r.id!==id); await sSet('cash:data',cashData); renderCash(); }
+function renderCash(){
+  const q=(document.getElementById('cashSearch').value||'').toLowerCase();
+  const sorted=[...cashData].sort((a,b)=> a.date===b.date?a.id-b.id:a.date.localeCompare(b.date));
+  let run=0,tin=0,tout=0; const wb=sorted.map(r=>{run+=r.cin-r.cout;tin+=r.cin;tout+=r.cout;return {...r,bal:run};});
+  document.getElementById('cIn').textContent=money(tin);document.getElementById('cOut').textContent=money(tout);document.getElementById('cBal').textContent=money(run);
+  const shown=wb.filter(r=>!q||r.part.toLowerCase().includes(q)||(r.inv||'').toLowerCase().includes(q)||r.mode.toLowerCase().includes(q)||r.date.includes(q));
+  const body=document.getElementById('cashBody');
+  if(!shown.length){ body.innerHTML=`<tr><td colspan="8"><div class="empty"><b>${cashData.length?'No matches':'No entries yet'}</b>${cashData.length?'Try a different search.':'Add your first cash book entry above.'}</div></td></tr>`; return; }
+  body.innerHTML=shown.map(r=>`<tr><td class="mono">${fmtDate(r.date)}</td><td>${esc(r.part)}</td><td class="tnum mono ${r.cin?'tin':''}">${r.cin?money(r.cin):'—'}</td><td class="tnum mono ${r.cout?'tout':''}">${r.cout?money(r.cout):'—'}</td><td class="tnum mono bal">${money(r.bal)}</td><td>${r.mode}</td><td class="mono">${r.inv?esc(r.inv):'—'}</td><td><button class="del" onclick="delCash(${r.id})">✕</button></td></tr>`).join('');
+}
+
+// ---- customer & service ----
+function calcBal(){
+  const rate=parseFloat(document.getElementById('uRate').value)||0;
+  const pay=parseFloat(document.getElementById('uPay').value)||0;
+  document.getElementById('uBal').value=(rate-pay).toString();
+}
+async function addCust(){
+  const g=id=>document.getElementById(id).value;
+  const date=g('uDate'), name=g('uName').trim(), part=g('uPart').trim();
+  const rate=parseFloat(g('uRate'))||0, pay=parseFloat(g('uPay'))||0;
+  if(!date||!name){ alert('Date and customer name are required.'); return; }
+  if(rate===0){ alert('Enter the service rate.'); return; }
+  custData.push({id:Date.now(),date,name,mobile:g('uMobile').trim(),addr:g('uAddr').trim(),part,
+    veh:g('uVeh').trim(),vehno:g('uVehNo').trim(),gst:g('uGst'),entry:g('uEntry'),exit:g('uExit'),
+    rate,pay,bal:rate-pay,mode:g('uMode'),inv:g('uInv').trim(),status:g('uStatus'),feed:g('uFeed').trim(),remark:g('uRemark').trim()});
+  await sSet('cust:data',custData);
+  ['uName','uMobile','uAddr','uPart','uVeh','uVehNo','uEntry','uExit','uRate','uPay','uBal','uInv','uFeed','uRemark'].forEach(i=>document.getElementById(i).value='');
+  renderCust();
+}
+async function delCust(id){ custData=custData.filter(r=>r.id!==id); await sSet('cust:data',custData); renderCust(); }
+function inMonth(d){ const n=new Date(); const [y,m]=d.split('-'); return +y===n.getFullYear() && +m===n.getMonth()+1; }
+function isToday(d){ return d===new Date().toISOString().slice(0,10); }
+function renderCust(){
+  const q=(document.getElementById('custSearch').value||'').toLowerCase();
+  const f=document.getElementById('custFilter').value;
+  const sorted=[...custData].sort((a,b)=> a.date===b.date?b.id-a.id:b.date.localeCompare(a.date));
+  let tot=0,paid=0,due=0,month=0;
+  custData.forEach(r=>{ tot+=r.rate; paid+=r.pay; due+=r.bal; if(inMonth(r.date)) month+=r.rate; });
+  document.getElementById('sTotal').textContent=money(tot);
+  document.getElementById('sPaid').textContent=money(paid);
+  document.getElementById('sDue').textContent=money(due);
+  document.getElementById('sMonth').textContent=money(month);
+  let shown=sorted.filter(r=>!q||[r.name,r.mobile,r.vehno,r.part,r.inv].some(x=>(x||'').toLowerCase().includes(q)));
+  if(f==='today') shown=shown.filter(r=>isToday(r.date));
+  else if(f==='month') shown=shown.filter(r=>inMonth(r.date));
+  else if(f==='due') shown=shown.filter(r=>r.bal>0);
+  else if(f==='Progress') shown=shown.filter(r=>r.status==='Progress');
+  const body=document.getElementById('custBody');
+  if(!shown.length){ body.innerHTML=`<tr><td colspan="19"><div class="empty"><b>${custData.length?'No matches':'No service entries yet'}</b>${custData.length?'Adjust search or filter.':'Add your first customer service entry above.'}</div></td></tr>`; return; }
+  body.innerHTML=shown.map(r=>`<tr>
+    <td class="mono">${fmtDate(r.date)}</td><td>${esc(r.name)}</td><td class="mono">${esc(r.mobile||'—')}</td>
+    <td>${esc(r.addr||'—')}</td><td>${esc(r.part||'—')}</td><td>${esc(r.veh||'—')}</td><td class="mono">${esc(r.vehno||'—')}</td>
+    <td class="mono">${esc(r.entry||'—')}</td><td class="mono">${esc(r.exit||'—')}</td>
+    <td class="tnum mono">${money(r.rate)}</td><td class="tnum mono tin">${money(r.pay)}</td>
+    <td class="tnum mono ${r.bal>0?'tout':''}">${money(r.bal)}</td>
+    <td>${esc(r.mode||'—')}</td><td class="mono">${esc(r.inv||'—')}</td>
+    <td>${r.gst==='gst'?'<b style="color:var(--wax-dk)">GST</b>':'—'}</td>
+    <td>${esc(r.status)}</td><td>${esc(r.feed||'—')}</td><td>${esc(r.remark||'—')}</td>
+    <td><button class="del" onclick="delCust(${r.id})">✕</button></td></tr>`).join('');
+}
+
+// ---- invoice ----
+let currentInvEntry=null;
+function fyLabel(dstr){ // Indian FY e.g. 26-27
+  const d=dstr?new Date(dstr):new Date(); const y=d.getFullYear(), m=d.getMonth()+1;
+  const start = m>=4 ? y : y-1; const end=start+1;
+  return String(start).slice(2)+'-'+String(end).slice(2);
+}
+async function nextInvNo(isGst, dstr){
+  const fy=fyLabel(dstr);
+  const key='invcounter:'+(isGst?'gst':'ng')+':'+fy;
+  let n=(await sGet(key))||0; n+=1; await sSet(key,n);
+  return 'DS/'+(isGst?'GST':'NG')+'/'+fy+'/'+String(n).padStart(3,'0');
+}
+async function getSeller(){ return await sGet('seller')|| {name:'',gstin:'',addr:'',place:'Raipur, Chhattisgarh'}; }
+async function editSeller(){
+  const s=await getSeller();
+  const name=prompt('Business name (prints as header):', s.name); if(name===null) return;
+  const gstin=prompt('Business GSTIN:', s.gstin); if(gstin===null) return;
+  const addr=prompt('Business address:', s.addr); if(addr===null) return;
+  const place=prompt('Place of supply:', s.place||'Raipur, Chhattisgarh'); if(place===null) return;
+  await sSet('seller',{name:name.trim(),gstin:gstin.trim(),addr:addr.trim(),place:place.trim()});
+  alert('Seller details saved. These print on every invoice.');
+  renderInvList();
+}
+async function renderInvList(){
+  const s=await getSeller();
+  document.getElementById('sellerWarn').style.display = s.name? 'none':'block';
+  const q=(document.getElementById('invSearch').value||'').toLowerCase();
+  const saved=await sGet('inv:saved')||{};
+  const sorted=[...custData].sort((a,b)=> b.date.localeCompare(a.date)||b.id-a.id);
+  const shown=sorted.filter(r=>!q||[r.name,r.vehno,r.inv,r.part].some(x=>(x||'').toLowerCase().includes(q)));
+  const body=document.getElementById('invBody');
+  if(!shown.length){ body.innerHTML=`<tr><td colspan="9"><div class="empty"><b>${custData.length?'No matches':'No service entries to bill'}</b>${custData.length?'':'Add entries in Customer & Service first.'}</div></td></tr>`; return; }
+  body.innerHTML=shown.map(r=>`<tr>
+    <td class="mono">${fmtDate(r.date)}</td><td>${esc(r.name)}</td><td class="mono">${esc(r.vehno||'—')}</td>
+    <td>${esc(r.part||'—')}</td><td class="tnum mono">${money(r.rate)}</td>
+    <td>${r.gst==='gst'?'<b style="color:var(--wax-dk)">GST</b>':'Non-GST'}</td>
+    <td class="mono">${esc(r.inv||'—')}</td>
+    <td>${saved[r.id]?'<span style="color:var(--ok)">✓ saved</span>':'—'}</td>
+    <td style="white-space:nowrap">
+      <button class="btn g sm" style="padding:5px 9px" onclick="previewInv(${r.id},'gst')">👁 GST</button>
+      <button class="btn g sm" style="padding:5px 9px" onclick="previewInv(${r.id},'nongst')">👁 Non-GST</button>
+    </td></tr>`).join('');
+}
+async function previewInv(entryId, forceType){
+  const r=custData.find(x=>x.id===entryId); if(!r) return;
+  const s=await getSeller();
+  if(!s.name){ alert('Set seller details first (⚙ Seller details).'); return; }
+  const isGst = forceType ? forceType==='gst' : r.gst==='gst';
+  // auto invoice number — one per entry per type, reused once assigned
+  const assigned = await sGet('invno:'+r.id+':'+(isGst?'gst':'ng'));
+  let invNo = assigned;
+  if(!invNo){ invNo = await nextInvNo(isGst, r.date); await sSet('invno:'+r.id+':'+(isGst?'gst':'ng'), invNo); }
+  currentInvEntry={r,isGst,invNo};
+  document.getElementById('invPaper').innerHTML=buildInvoiceHTML(r,s,isGst,invNo);
+  document.getElementById('invModal').classList.add('on');
+}
+function closeInv(){ document.getElementById('invModal').classList.remove('on'); currentInvEntry=null; }
+function buildInvoiceHTML(r,s,isGst,invNo){
+  const grand=r.rate;                       // entered rate = GST-inclusive grand total
+  // GST Section 170 rounding: compute taxable, then round CGST & SGST each to nearest rupee (half-up)
+  const rupee = n => Math.round(n);         // half-up to nearest rupee (Math.round rounds .5 up)
+  const taxableRaw = isGst ? grand/1.18 : grand;
+  const taxable = isGst ? Math.round(taxableRaw*100)/100 : grand;   // taxable value kept to paise
+  const cgst = isGst ? rupee(taxableRaw*0.09) : 0;                  // each component rounded to rupee
+  const sgst = isGst ? rupee(taxableRaw*0.09) : 0;
+  const invoiceTotal = isGst ? rupee(taxable + cgst + sgst) : grand; // total also to nearest rupee
+  const roundAdj = isGst ? (invoiceTotal - (taxable + cgst + sgst)) : 0;
+  const inr=n=>Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const inr0=n=>Number(n).toLocaleString('en-IN');
+  return `
+  <div style="font-family:Georgia,'Times New Roman',serif;color:#111">
+    <h1 style="text-align:center;letter-spacing:1px;margin:0 0 24px;font-size:26px;text-decoration:underline">${isGst?'TAX INVOICE':'INVOICE'}</h1>
+    <div style="font-weight:bold;font-size:14px;line-height:1.6">
+      ${esc(s.name).toUpperCase()}<br>
+      ${isGst&&s.gstin?`GSTIN: ${esc(s.gstin)}<br>`:''}
+      ${esc(s.addr)}
+    </div>
+    <div style="font-weight:bold;font-size:13px;line-height:1.7;margin-top:16px">
+      Invoice No : ${esc(r.inv||'—')}<br>
+      Invoice Date : ${fmtDate(r.date)}<br>
+      Customer Name : ${esc(r.name)}<br>
+      ${r.vehno?`Car Number : ${esc(r.vehno)}<br>`:''}
+      ${isGst&&r.custGstin?`Customer GSTIN : ${esc(r.custGstin)}<br>`:''}
+      Place of Supply : ${esc(s.place||'Raipur, Chhattisgarh')}
+    </div>
+    <div style="font-weight:bold;margin:22px 0 10px;font-size:13px">SERVICE DETAILS :</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;text-align:center">
+      <thead><tr>
+        <th style="border:1px solid #333;padding:10px">DESCRIPTION (G/S)</th>
+        ${isGst?'<th style="border:1px solid #333;padding:10px">HSN / SAC</th>':''}
+        <th style="border:1px solid #333;padding:10px">QTY</th>
+        <th style="border:1px solid #333;padding:10px">RATE (₹)</th>
+        <th style="border:1px solid #333;padding:10px">${isGst?'TAXABLE (₹)':'AMOUNT (₹)'}</th>
+      </tr></thead>
+      <tbody><tr>
+        <td style="border:1px solid #333;padding:16px 10px">${esc(r.part||'Detailing Service')}</td>
+        ${isGst?`<td style="border:1px solid #333;padding:16px 10px">${esc(r.hsn||'9987')}</td>`:''}
+        <td style="border:1px solid #333;padding:16px 10px">1</td>
+        <td style="border:1px solid #333;padding:16px 10px">${inr0(grand)}</td>
+        <td style="border:1px solid #333;padding:16px 10px">${inr(taxable)}</td>
+      </tr></tbody>
+    </table>
+    <div style="text-align:right;font-weight:bold;font-size:13px;line-height:1.9;margin-top:16px">
+      ${isGst?`
+        SUB TOTAL &nbsp;&nbsp; ₹${inr(taxable)}<br>
+        CGST @9% &nbsp;&nbsp; ₹${inr0(cgst)}<br>
+        SGST @9% &nbsp;&nbsp; ₹${inr0(sgst)}<br>
+        ${Math.abs(roundAdj)>=0.005?`ROUND OFF &nbsp;&nbsp; ${roundAdj>=0?'+':'−'}₹${inr(Math.abs(roundAdj))}<br>`:''}`:''}
+      <span style="font-size:15px">GRAND TOTAL &nbsp;&nbsp; ₹${inr0(invoiceTotal)}</span>
+    </div>
+    <div style="font-size:12px;margin-top:26px;line-height:1.6">
+      <b>Payment Mode:</b> ${esc(r.mode||'—')}<br>
+      <b>UPI / Transaction Ref:</b> ${esc(r.inv||'')}
+    </div>
+    <div style="font-size:11.5px;margin-top:18px;line-height:1.5">
+      <b>Declaration:</b><br>
+      We hereby declare that the above invoice reflects the true value of ${isGst?'services rendered and complies with applicable GST laws.':'goods/services rendered.'}
+    </div>
+    <div style="text-align:right;margin-top:44px;font-weight:bold;font-size:13px">
+      For ${esc(s.name)}<br><br><br>
+      <span style="border-top:1px solid #333;padding-top:4px">Authorised Signatory</span>
+    </div>
+  </div>`;
+}
+async function saveInv(){
+  if(!currentInvEntry) return;
+  const saved=await sGet('inv:saved')||{};
+  saved[currentInvEntry.r.id]={type:currentInvEntry.isGst?'gst':'nongst',inv:currentInvEntry.r.inv,at:Date.now()};
+  await sSet('inv:saved',saved);
+  alert('Invoice saved to database'+(currentInvEntry.r.inv?' ('+currentInvEntry.r.inv+')':'')+'.');
+  renderInvList();
+}
+function downloadInv(){
+  if(!currentInvEntry) return;
+  const html='<!doctype html><html><head><meta charset="utf-8"><title>Invoice '+(currentInvEntry.r.inv||'')+'</title></head><body style="margin:0;padding:30px">'+document.getElementById('invPaper').innerHTML+'</body></html>';
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download='invoice-'+((currentInvEntry.r.inv||currentInvEntry.r.name).replace(/[^\w-]/g,'_'))+'.html'; a.click();
+}
+
+// ---- bookings / advance ----
+async function addBook(){
+  const g=id=>document.getElementById(id).value;
+  const appt=g('bAppt'), name=g('bName').trim();
+  if(!appt||!name){ alert('Appointment date and name are required.'); return; }
+  bookData.push({id:Date.now(),appt,name,mobile:g('bMobile').trim(),email:g('bEmail').trim(),addr:g('bAddr').trim(),
+    zip:g('bZip').trim(),service:g('bService').trim(),color:g('bColor').trim(),vehno:g('bVehNo').trim(),
+    bookedBy:g('bBookedBy').trim(),rate:parseFloat(g('bRate'))||0,advance:parseFloat(g('bAdvance'))||0,
+    mode:g('bMode'),arrived:g('bArrived'),delivery:g('bDelivery'),warranty:g('bWarranty').trim(),
+    remark:g('bRemark').trim(),bookDate:new Date().toISOString().slice(0,10),transferred:false});
+  await sSet('book:data',bookData);
+  ['bName','bMobile','bEmail','bAddr','bZip','bService','bColor','bVehNo','bBookedBy','bRate','bAdvance','bDelivery','bWarranty','bRemark'].forEach(i=>document.getElementById(i).value='');
+  renderBook();
+}
+async function delBook(id){ if(!confirm('Delete this booking?'))return; bookData=bookData.filter(r=>r.id!==id); await sSet('book:data',bookData); renderBook(); }
+async function transferBook(id){
+  const b=bookData.find(x=>x.id===id); if(!b) return;
+  if(b.transferred){ alert('Already transferred.'); return; }
+  if(!confirm('Transfer "'+b.name+'" to Customer & Service? Advance ₹'+b.advance+' will carry as payment.')) return;
+  custData.push({id:Date.now(),date:b.appt,name:b.name,mobile:b.mobile,addr:b.addr,part:b.service,
+    veh:b.color,vehno:b.vehno,gst:'nongst',entry:'',exit:'',rate:b.rate,pay:b.advance,bal:b.rate-b.advance,
+    mode:b.mode,inv:'',status:'Booked',feed:'',remark:'From booking'+(b.remark?': '+b.remark:'')});
+  b.transferred=true; b.transferredAt=Date.now();
+  await sSet('cust:data',custData); await sSet('book:data',bookData);
+  alert('Transferred to Customer & Service. Advance carried as payment; balance ₹'+(b.rate-b.advance)+' pending.');
+  renderBook();
+}
+function renderBook(){
+  const q=(document.getElementById('bookSearch').value||'').toLowerCase();
+  const f=document.getElementById('bookFilter').value;
+  let pend=0,adv=0,exp=0;
+  bookData.forEach(b=>{ if(!b.transferred){pend++;exp+=b.rate;} adv+=b.advance; });
+  document.getElementById('bPend').textContent=pend;
+  document.getElementById('bAdv').textContent=money(adv);
+  document.getElementById('bExp').textContent=money(exp);
+  let list=[...bookData].sort((a,b)=> b.appt.localeCompare(a.appt)||b.id-a.id);
+  if(f==='pending') list=list.filter(b=>!b.transferred);
+  else if(f==='transferred') list=list.filter(b=>b.transferred);
+  list=list.filter(b=>!q||[b.name,b.mobile,b.vehno,b.service].some(x=>(x||'').toLowerCase().includes(q)));
+  const body=document.getElementById('bookBody');
+  if(!list.length){ body.innerHTML=`<tr><td colspan="9"><div class="empty"><b>${bookData.length?'No matches':'No bookings yet'}</b>${bookData.length?'Adjust search or filter.':'Add your first booking above.'}</div></td></tr>`; return; }
+  body.innerHTML=list.map(b=>`<tr style="${b.transferred?'opacity:.6':''}">
+    <td class="mono">${fmtDate(b.appt)}</td><td>${esc(b.name)}</td><td class="mono">${esc(b.mobile||'—')}</td>
+    <td>${esc(b.service||'—')}</td><td class="mono">${esc(b.vehno||'—')}</td>
+    <td class="tnum mono">${money(b.rate)}</td><td class="tnum mono tin">${money(b.advance)}</td>
+    <td>${b.arrived==='Yes'?'<span style="color:var(--ok)">✓ Yes</span>':'No'}</td>
+    <td style="white-space:nowrap">${b.transferred
+      ? '<span style="color:var(--chrome);font-size:11px">✓ transferred</span>'
+      : `<button class="btn wax sm" style="padding:5px 9px" onclick="transferBook(${b.id})">→ Transfer</button> <button class="del" onclick="delBook(${b.id})">✕</button>`}
+    </td></tr>`).join('');
+}
+
+// ---- inventory ----
+async function addProduct(){
+  const name=document.getElementById('stName').value.trim();
+  const unit=document.getElementById('stUnit').value.trim()||'pc';
+  const open=parseFloat(document.getElementById('stOpen').value)||0;
+  if(!name){ alert('Enter a product name.'); return; }
+  if(stockData.some(p=>p.name.toLowerCase()===name.toLowerCase())){ alert('That product already exists.'); return; }
+  stockData.push({id:Date.now(),name,unit,opening:open,received:0,consumed:0});
+  await sSet('stock:data',stockData);
+  document.getElementById('stName').value='';document.getElementById('stUnit').value='';document.getElementById('stOpen').value='';
+  renderStock();
+}
+async function moveStock(id,dir){
+  const p=stockData.find(x=>x.id===id); if(!p) return;
+  const label=dir>0?'received':'consumed';
+  const q=parseFloat(prompt('Quantity '+label+' for "'+p.name+'":',''));
+  if(!q||q<=0) return;
+  if(dir>0) p.received+=q;
+  else{
+    const closing=p.opening+p.received-p.consumed;
+    if(q>closing){ if(!confirm('Only '+closing+' in stock. Consume '+q+' anyway (stock goes negative)?')) return; }
+    p.consumed+=q;
+  }
+  await sSet('stock:data',stockData); renderStock();
+}
+async function delProduct(id){ if(!confirm('Remove this product?'))return; stockData=stockData.filter(p=>p.id!==id); await sSet('stock:data',stockData); renderStock(); }
+function renderStock(){
+  const q=(document.getElementById('stockSearch').value||'').toLowerCase();
+  const f=document.getElementById('stockFilter').value;
+  let recv=0,cons=0; stockData.forEach(p=>{recv+=p.received;cons+=p.consumed;});
+  document.getElementById('stCount').textContent=stockData.length;
+  document.getElementById('stRecv').textContent=recv;
+  document.getElementById('stCons').textContent=cons;
+  let list=[...stockData].sort((a,b)=>a.name.localeCompare(b.name)).filter(p=>!q||p.name.toLowerCase().includes(q));
+  if(f==='low') list=list.filter(p=>(p.opening+p.received-p.consumed)<=5);
+  const body=document.getElementById('stockBody');
+  if(!list.length){ body.innerHTML=`<tr><td colspan="7"><div class="empty"><b>${stockData.length?'No matches':'No products yet'}</b>${stockData.length?'Adjust search/filter.':'Add your first product above.'}</div></td></tr>`; return; }
+  body.innerHTML=list.map(p=>{
+    const closing=p.opening+p.received-p.consumed;
+    const low=closing<=5;
+    return `<tr>
+    <td><b>${esc(p.name)}</b></td><td>${esc(p.unit)}</td>
+    <td class="tnum mono tin">${p.received}</td><td class="tnum mono tout">${p.consumed}</td>
+    <td class="tnum mono bal" style="${low?'color:var(--bad)':''}">${closing}${low?' ⚠':''}</td>
+    <td style="white-space:nowrap">
+      <button class="btn g sm" style="padding:5px 10px" onclick="moveStock(${p.id},1)" title="Add received">+ In</button>
+      <button class="btn g sm" style="padding:5px 10px" onclick="moveStock(${p.id},-1)" title="Log consumed">− Out</button>
+    </td>
+    <td><button class="del" onclick="delProduct(${p.id})">✕</button></td></tr>`;
+  }).join('');
+}
+
+// ---- attendance & payroll ----
+let currentSlip=null;
+async function addEmp(){
+  const name=document.getElementById('empName').value.trim();
+  const sal=parseFloat(document.getElementById('empSalary').value)||0;
+  if(!name){ alert('Enter employee name.'); return; }
+  if(sal<=0){ alert('Enter monthly salary.'); return; }
+  if(empData.some(e=>e.name.toLowerCase()===name.toLowerCase())){ alert('Employee already exists.'); return; }
+  empData.push({id:Date.now(),name,salary:sal});
+  await sSet('emp:data',empData);
+  document.getElementById('empName').value='';document.getElementById('empSalary').value='';
+  renderAttend();
+}
+async function delEmp(id){ if(!confirm('Remove this employee?'))return; empData=empData.filter(e=>e.id!==id); await sSet('emp:data',empData); renderAttend(); }
+function daysInMonth(ym){ const [y,m]=ym.split('-').map(Number); return new Date(y,m,0).getDate(); }
+function attKey(empId,ym){ return empId+'|'+ym; }
+async function setDay(empId,ym,day,status){
+  const k=attKey(empId,ym);
+  if(!attendData[k]) attendData[k]={};
+  if(attendData[k][day]===status) delete attendData[k][day]; else attendData[k][day]=status;
+  await sSet('attend:data',attendData);
+  renderAttend();
+}
+// find advances for an employee in the selected month from cash + petty books
+function advancesFor(empName,ym){
+  const nameL=empName.toLowerCase();
+  let total=0; const hits=[];
+  const scan=(rows,src)=>rows.forEach(r=>{
+    if(r.date && r.date.slice(0,7)===ym && r.cout>0 && (r.part||'').toLowerCase().includes(nameL) && (r.part||'').toLowerCase().includes('advance')){
+      total+=r.cout; hits.push({src,date:r.date,part:r.part,amt:r.cout});
+    }
+  });
+  scan(cashData,'Cash Book'); scan(pettyData,'Petty Cash');
+  return {total,hits};
+}
+function payFor(emp,ym){
+  const k=attKey(emp.id,ym), rec=attendData[k]||{};
+  const dim=daysInMonth(ym);
+  let present=0,half=0,absent=0;
+  Object.values(rec).forEach(s=>{ if(s==='P')present++; else if(s==='H')half++; else if(s==='A')absent++; });
+  const worked=present+half*0.5;
+  const perDay=emp.salary/dim;
+  const earned=Math.round(perDay*worked);
+  const adv=advancesFor(emp.name,ym);
+  const net=earned-adv.total;
+  return {dim,present,half,absent,worked,perDay,earned,adv,net};
+}
+function renderAttend(){
+  const ym=document.getElementById('payMonth').value||new Date().toISOString().slice(0,7);
+  const q=(document.getElementById('empSearch').value||'').toLowerCase();
+  const dim=daysInMonth(ym);
+  let gross=0,net=0;
+  empData.forEach(e=>{ const p=payFor(e,ym); gross+=p.earned; net+=p.net; });
+  document.getElementById('pEmpCount').textContent=empData.length;
+  document.getElementById('pGross').textContent=money(gross);
+  document.getElementById('pNet').textContent=money(net);
+  const list=empData.filter(e=>!q||e.name.toLowerCase().includes(q));
+  const wrap=document.getElementById('attendCards');
+  if(!list.length){ wrap.innerHTML=`<div class="card"><div class="empty"><b>${empData.length?'No matches':'No employees yet'}</b>${empData.length?'':'Add an employee above to start marking attendance.'}</div></div>`; return; }
+  wrap.innerHTML=list.map(e=>{
+    const p=payFor(e,ym), rec=attendData[attKey(e.id,ym)]||{};
+    let cells='';
+    for(let d=1;d<=dim;d++){
+      const s=rec[d]||'';
+      const col=s==='P'?'#1E7A4C':s==='H'?'#C8A24B':s==='A'?'#B23A2E':'#fff';
+      const tc=s?'#fff':'#6B7C88';
+      cells+=`<div style="display:inline-flex;flex-direction:column;align-items:center;margin:2px">
+        <div style="font-size:9px;color:#6B7C88">${d}</div>
+        <div onclick="cycleDay(${e.id},'${ym}',${d})" title="Tap to cycle P→H→A"
+             style="width:26px;height:26px;border:1px solid var(--line);border-radius:6px;background:${col};color:${tc};display:grid;place-items:center;font-size:11px;font-weight:700;cursor:pointer">${s||'·'}</div>
+      </div>`;
+    }
+    return `<div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap">
+        <b style="font-size:15px">${esc(e.name)}</b>
+        <span style="font-size:12px;color:var(--mut)">Salary ${money(e.salary)}/mo</span>
+        <span style="margin-left:auto;font-size:12px">P:${p.present} · H:${p.half} · A:${p.absent}</span>
+        <button class="btn p sm" style="padding:6px 11px" onclick="showSlip(${e.id},'${ym}')">🧾 Payslip</button>
+        <button class="del" onclick="delEmp(${e.id})">✕</button>
+      </div>
+      <div style="padding:12px 14px;line-height:0">${cells}</div>
+      <div style="padding:10px 14px;border-top:1px solid var(--line);font-size:12.5px;display:flex;gap:18px;flex-wrap:wrap">
+        <span>Earned: <b>${money(p.earned)}</b></span>
+        <span>Advances: <b style="color:var(--bad)">− ${money(p.adv.total)}</b></span>
+        <span>Net payable: <b style="color:var(--ok)">${money(p.net)}</b></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function cycleDay(empId,ym,day){
+  const k=attKey(empId,ym); if(!attendData[k]) attendData[k]={};
+  const cur=attendData[k][day]||'';
+  const nxt = cur===''?'P' : cur==='P'?'H' : cur==='H'?'A' : '';
+  if(nxt==='') delete attendData[k][day]; else attendData[k][day]=nxt;
+  await sSet('attend:data',attendData); renderAttend();
+}
+function showSlip(empId,ym){
+  const e=empData.find(x=>x.id===empId); if(!e) return;
+  const p=payFor(e,ym);
+  const monthName=new Date(ym+'-01').toLocaleString('en-IN',{month:'long',year:'numeric'});
+  currentSlip={e,ym,monthName};
+  const advRows=p.adv.hits.length? p.adv.hits.map(h=>`<tr><td style="padding:4px 0;font-size:12px">${esc(h.part)} <span style="color:#999">(${h.src}, ${fmtDate(h.date)})</span></td><td style="text-align:right;font-size:12px">− ${money(h.amt)}</td></tr>`).join('') : `<tr><td colspan="2" style="padding:4px 0;font-size:12px;color:#999">No advances this month</td></tr>`;
+  document.getElementById('slipPaper').innerHTML=`
+    <div style="font-family:Georgia,serif;color:#111">
+      <h2 style="text-align:center;margin:0 0 4px">PAYSLIP</h2>
+      <div style="text-align:center;font-size:12px;color:#666;margin-bottom:20px">${monthName}</div>
+      <div style="font-size:13px;line-height:1.9">
+        <b>Employee:</b> ${esc(e.name)}<br>
+        <b>Monthly Salary:</b> ${money(e.salary)}<br>
+        <b>Days in month:</b> ${p.dim}
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-top:16px;font-size:13px">
+        <tr style="border-bottom:1px solid #ddd"><td style="padding:7px 0">Present days</td><td style="text-align:right">${p.present}</td></tr>
+        <tr style="border-bottom:1px solid #ddd"><td style="padding:7px 0">Half days</td><td style="text-align:right">${p.half} (= ${p.half*0.5} day)</td></tr>
+        <tr style="border-bottom:1px solid #ddd"><td style="padding:7px 0">Absent days</td><td style="text-align:right">${p.absent}</td></tr>
+        <tr style="border-bottom:1px solid #ddd"><td style="padding:7px 0">Effective days worked</td><td style="text-align:right"><b>${p.worked}</b></td></tr>
+        <tr style="border-bottom:1px solid #ddd"><td style="padding:7px 0">Earned (${money(Math.round(p.perDay))}/day × ${p.worked})</td><td style="text-align:right"><b>${money(p.earned)}</b></td></tr>
+      </table>
+      <div style="margin-top:14px;font-size:12px"><b>Advance deductions:</b></div>
+      <table style="width:100%;border-collapse:collapse">${advRows}
+        <tr style="border-top:1px solid #ddd"><td style="padding:6px 0"><b>Total advances</b></td><td style="text-align:right"><b style="color:#B23A2E">− ${money(p.adv.total)}</b></td></tr>
+      </table>
+      <div style="margin-top:18px;padding:12px;background:#F5F7F8;border-radius:8px;display:flex;justify-content:space-between;font-size:16px">
+        <b>NET PAYABLE</b><b style="color:#1E7A4C">${money(p.net)}</b>
+      </div>
+      <div style="margin-top:26px;font-size:12px;color:#666">Advances are auto-detected from Cash Book &amp; Petty Cash entries mentioning the employee name with "advance".</div>
+    </div>`;
+  document.getElementById('slipModal').classList.add('on');
+}
+function downloadSlip(){
+  if(!currentSlip) return;
+  const html='<!doctype html><html><head><meta charset="utf-8"><title>Payslip '+currentSlip.e.name+'</title></head><body style="margin:0;padding:30px">'+document.getElementById('slipPaper').innerHTML+'</body></html>';
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download='payslip-'+currentSlip.e.name.replace(/[^\w]/g,'_')+'-'+currentSlip.ym+'.html'; a.click();
+}
+
+// ---- free service tracker ----
+let currentReminder=null;
+function addDays(dateStr,days){ const d=new Date(dateStr); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+async function addFree(){
+  const g=id=>document.getElementById(id).value;
+  const name=g('fName').trim(), mobile=g('fMobile').trim(), veh=g('fVeh').trim(), service=g('fService').trim();
+  const count=parseInt(g('fCount'))||0, interval=parseInt(g('fInterval'))||0;
+  if(!name||count<=0||interval<=0){ alert('Enter customer name, number of free services, and interval (days).'); return; }
+  const start=todayStr();
+  freeData.push({id:Date.now(),name,mobile,veh,service,total:count,interval,availed:0,startDate:start,
+    nextDue:addDays(start,interval),history:[]});
+  await sSet('free:data',freeData);
+  ['fName','fMobile','fVeh','fService','fCount','fInterval'].forEach(i=>document.getElementById(i).value='');
+  renderFree();
+}
+async function availFree(id){
+  const p=freeData.find(x=>x.id===id); if(!p) return;
+  if(p.availed>=p.total){ alert('All free services already availed.'); return; }
+  p.availed+=1; p.history.push({on:todayStr(),num:p.availed});
+  if(p.availed<p.total) p.nextDue=addDays(todayStr(),p.interval); else p.nextDue=null;
+  await sSet('free:data',freeData);
+  alert('Recorded free service '+p.availed+' of '+p.total+' for '+p.name+'.'+(p.nextDue?' Next due '+fmtDate(p.nextDue)+'.':' Plan complete.'));
+  renderFree();
+}
+async function delFree(id){ if(!confirm('Remove this free-service plan?'))return; freeData=freeData.filter(p=>p.id!==id); await sSet('free:data',freeData); renderFree(); }
+function isDue(p){ return p.nextDue && p.nextDue<=todayStr() && p.availed<p.total; }
+function remind(id){
+  const p=freeData.find(x=>x.id===id); if(!p) return;
+  currentReminder=p;
+  const svc=p.service||'service';
+  const msg=`Hello ${p.name}! 🚗\n\nThis is a reminder from Detailing Street — your free ${svc} (${p.availed+1} of ${p.total}) for ${p.veh||'your vehicle'} is now due.\n\nPlease reply to book a slot. Thank you for choosing us!`;
+  document.getElementById('waTo').textContent='To: '+(p.mobile||'no number on file');
+  document.getElementById('waMsg').textContent=msg;
+  document.getElementById('waModal').classList.add('on');
+}
+async function markReminderSent(){
+  if(currentReminder){ currentReminder.lastReminded=todayStr(); await sSet('free:data',freeData); }
+  document.getElementById('waModal').classList.remove('on');
+  renderFree();
+}
+function renderFree(){
+  const q=(document.getElementById('freeSearch').value||'').toLowerCase();
+  const f=document.getElementById('freeFilter').value;
+  let active=0,due=0,availed=0;
+  freeData.forEach(p=>{ if(p.availed<p.total)active++; if(isDue(p))due++; availed+=p.availed; });
+  document.getElementById('fActive').textContent=active;
+  document.getElementById('fDue').textContent=due;
+  document.getElementById('fAvailed').textContent=availed;
+  let list=[...freeData].sort((a,b)=>{ const ad=isDue(a),bd=isDue(b); if(ad!==bd)return ad?-1:1; return (a.nextDue||'9999').localeCompare(b.nextDue||'9999'); });
+  list=list.filter(p=>!q||[p.name,p.veh,p.service,p.mobile].some(x=>(x||'').toLowerCase().includes(q)));
+  if(f==='due') list=list.filter(isDue);
+  else if(f==='active') list=list.filter(p=>p.availed<p.total);
+  else if(f==='done') list=list.filter(p=>p.availed>=p.total);
+  const wrap=document.getElementById('freeCards');
+  if(!list.length){ wrap.innerHTML=`<div class="empty"><b>${freeData.length?'No matches':'No free-service plans yet'}</b>${freeData.length?'Adjust search or filter.':'Add a plan above — set how many free services and the interval.'}</div>`; return; }
+  wrap.innerHTML=list.map(p=>{
+    const done=p.availed>=p.total, due=isDue(p);
+    let dots='';
+    for(let i=1;i<=p.total;i++) dots+=`<span style="display:inline-block;width:22px;height:22px;border-radius:50%;margin:2px;text-align:center;line-height:22px;font-size:11px;font-weight:700;${i<=p.availed?'background:#1E7A4C;color:#fff':'background:#eef2f4;color:#999;border:1px solid var(--line)'}">${i<=p.availed?'✓':i}</span>`;
+    return `<div style="border:1px solid ${due?'#E0B4AE':'var(--line)'};border-radius:12px;padding:14px;margin:8px 4px;background:${due?'#FCF3F1':'#fff'}">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <b style="font-size:15px">${esc(p.name)}</b>
+        <span style="font-size:12px;color:var(--mut)">${esc(p.veh||'')} · ${esc(p.service||'')}</span>
+        ${done?'<span style="font-size:11px;color:var(--ok);font-weight:700">✓ COMPLETED</span>':due?'<span style="font-size:11px;color:var(--bad);font-weight:700">● DUE NOW</span>':''}
+        <span style="margin-left:auto;font-size:12px;color:var(--mut)">${p.availed}/${p.total} availed</span>
+      </div>
+      <div style="margin:10px 0 6px">${dots}</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px">
+        <span>Interval: every ${p.interval} days</span>
+        ${p.nextDue?`<span>Next due: <b style="${due?'color:var(--bad)':''}">${fmtDate(p.nextDue)}</b></span>`:'<span style="color:var(--ok)">All done</span>'}
+        ${p.lastReminded?`<span style="color:var(--chrome)">Reminded ${fmtDate(p.lastReminded)}</span>`:''}
+        <span style="margin-left:auto;display:flex;gap:6px">
+          ${!done?`<button class="btn wax sm" style="padding:5px 10px" onclick="remind(${p.id})">📲 Remind</button>
+          <button class="btn p sm" style="padding:5px 10px" onclick="availFree(${p.id})">✓ Mark availed</button>`:''}
+          <button class="del" onclick="delFree(${p.id})">✕</button>
+        </span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ---- accounts summary ----
+let sumPeriod='monthly';
+function fyOf(dateStr){ // returns start year of Indian FY for a date
+  const d=new Date(dateStr); const y=d.getFullYear(), m=d.getMonth()+1;
+  return m>=4 ? y : y-1;
+}
+function fyRange(startYear){ return {from:startYear+'-04-01', to:(startYear+1)+'-03-31', label:String(startYear).slice(2)+'-'+String(startYear+1).slice(2)}; }
+function allFYs(){
+  const set=new Set();
+  custData.forEach(r=>r.date&&set.add(fyOf(r.date)));
+  cashData.forEach(r=>r.date&&set.add(fyOf(r.date)));
+  pettyData.forEach(r=>r.date&&set.add(fyOf(r.date)));
+  set.add(fyOf(new Date().toISOString().slice(0,10)));
+  return [...set].sort((a,b)=>b-a);
+}
+function initSummary(){
+  const sel=document.getElementById('sumFY');
+  const fys=allFYs();
+  sel.innerHTML=fys.map(y=>{ const r=fyRange(y); return `<option value="${y}">FY ${r.label} (Apr ${y}–Mar ${y+1})</option>`; }).join('');
+  renderSummary();
+}
+function setPeriod(p){
+  sumPeriod=p;
+  document.getElementById('tabDaily').classList.toggle('active',p==='daily');
+  document.getElementById('tabMonthly').classList.toggle('active',p==='monthly');
+  document.getElementById('tabHalf').classList.toggle('active',p==='half');
+  renderSummary();
+}
+function inRange(d,from,to){ return d>=from && d<=to; }
+function renderSummary(){
+  const fyStart=parseInt(document.getElementById('sumFY').value); if(isNaN(fyStart)) return;
+  const {from,to,label}=fyRange(fyStart);
+  // FY totals
+  let sales=0,recv=0,out=0,gst=0,non=0,cin=0,cout=0;
+  custData.forEach(r=>{ if(inRange(r.date,from,to)){ sales+=r.rate; recv+=r.pay; out+=r.bal; if(r.gst==='gst')gst+=r.rate; else non+=r.rate; } });
+  [...cashData,...pettyData].forEach(r=>{ if(inRange(r.date,from,to)){ cin+=r.cin||0; cout+=r.cout||0; } });
+  document.getElementById('fySales').textContent=money(sales);
+  document.getElementById('fyRecv').textContent=money(recv);
+  document.getElementById('fyOut').textContent=money(out);
+  document.getElementById('fyCash').textContent=money(cin-cout);
+  document.getElementById('fyGst').textContent=money(gst);
+  document.getElementById('fyNon').textContent=money(non);
+  document.getElementById('fyCin').textContent=money(cin);
+  document.getElementById('fyCout').textContent=money(cout);
+
+  // build period buckets
+  let buckets=[]; // {key,label,from,to}
+  if(sumPeriod==='monthly'){
+    document.getElementById('colPeriod').textContent='Month';
+    document.getElementById('periodTitle').textContent='Monthly breakdown — FY '+label;
+    for(let i=0;i<12;i++){ const mo=(3+i)%12; const yr=fyStart+(mo<3?1:0); const mm=String(mo+1).padStart(2,'0');
+      const f=`${yr}-${mm}-01`; const t=`${yr}-${mm}-${String(new Date(yr,mo+1,0).getDate()).padStart(2,'0')}`;
+      buckets.push({label:new Date(f).toLocaleString('en-IN',{month:'short',year:'2-digit'}),from:f,to:t}); }
+  } else if(sumPeriod==='half'){
+    document.getElementById('colPeriod').textContent='Half';
+    document.getElementById('periodTitle').textContent='Half-yearly breakdown — FY '+label;
+    buckets.push({label:'H1 (Apr–Sep)',from:`${fyStart}-04-01`,to:`${fyStart}-09-30`});
+    buckets.push({label:'H2 (Oct–Mar)',from:`${fyStart}-10-01`,to:`${fyStart+1}-03-31`});
+  } else { // daily — only days that have activity
+    document.getElementById('colPeriod').textContent='Date';
+    document.getElementById('periodTitle').textContent='Daily breakdown — FY '+label;
+    const days=new Set();
+    custData.forEach(r=>{ if(inRange(r.date,from,to)) days.add(r.date); });
+    [...cashData,...pettyData].forEach(r=>{ if(inRange(r.date,from,to)) days.add(r.date); });
+    [...days].sort().forEach(d=>buckets.push({label:fmtDate(d),from:d,to:d}));
+  }
+
+  let running=0; const rows=[];
+  buckets.forEach(b=>{
+    let bs=0,br=0,bo=0,bi=0,bou=0;
+    custData.forEach(r=>{ if(inRange(r.date,b.from,b.to)){ bs+=r.rate; br+=r.pay; bo+=r.bal; } });
+    [...cashData,...pettyData].forEach(r=>{ if(inRange(r.date,b.from,b.to)){ bi+=r.cin||0; bou+=r.cout||0; } });
+    running += (bi-bou);
+    rows.push({label:b.label,sales:bs,recv:br,out:bo,cin:bi,cout:bou,close:running});
+  });
+
+  const body=document.getElementById('sumBody');
+  const visible = sumPeriod==='daily' ? rows : rows; // months show all (incl zero) for full-year view
+  if(!visible.length || (sumPeriod==='daily'&&!rows.length)){ body.innerHTML=`<tr><td colspan="7"><div class="empty"><b>No data for this financial year</b>Add entries in Customer & Service / Cash Book for FY ${label}.</div></td></tr>`; return; }
+  body.innerHTML=visible.map(r=>`<tr>
+    <td><b>${r.label}</b></td>
+    <td class="tnum mono">${r.sales?money(r.sales):'—'}</td>
+    <td class="tnum mono ${r.recv?'tin':''}">${r.recv?money(r.recv):'—'}</td>
+    <td class="tnum mono ${r.out?'tout':''}">${r.out?money(r.out):'—'}</td>
+    <td class="tnum mono ${r.cin?'tin':''}">${r.cin?money(r.cin):'—'}</td>
+    <td class="tnum mono ${r.cout?'tout':''}">${r.cout?money(r.cout):'—'}</td>
+    <td class="tnum mono bal">${money(r.close)}</td></tr>`).join('');
+}
+function exportSummary(){
+  const fyStart=parseInt(document.getElementById('sumFY').value);
+  const {from,to,label}=fyRange(fyStart);
+  const rows=[['Accounts Summary — FY '+label,'Period: '+sumPeriod],[],['Period','Sales','Received','Outstanding','Cash In','Cash Out','Closing Balance']];
+  document.querySelectorAll('#sumBody tr').forEach(tr=>{
+    const c=[...tr.children].map(td=>td.textContent.replace(/₹|,/g,'').replace('—','0'));
+    if(c.length===7) rows.push(c);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='accounts-summary-FY'+label+'-'+sumPeriod+'.csv'; a.click();
+}
+
+// ---- export ----
+function exportSheet(which){
+  let rows, name;
+  if(which==='petty'){
+    const s=[...pettyData].sort((a,b)=> a.date===b.date?a.id-b.id:a.date.localeCompare(b.date)); let run=0;
+    rows=[['Date','Particulars','Cash In','Cash Out','Balance','Mode']];
+    s.forEach(r=>{run+=r.cin-r.cout;rows.push([r.date,r.part,r.cin,r.cout,run,r.mode]);}); name='petty-cash-book.csv';
+  } else {
+    const s=[...cashData].sort((a,b)=> a.date===b.date?a.id-b.id:a.date.localeCompare(b.date)); let run=0;
+    rows=[['Date','Particulars','Cash In','Cash Out','Balance','Mode','Invoice']];
+    s.forEach(r=>{run+=r.cin-r.cout;rows.push([r.date,r.part,r.cin,r.cout,run,r.mode,r.inv||'']);}); name='cash-book.csv';
+  }
+  if(which==='cust'){
+    const s=[...custData].sort((a,b)=> a.date.localeCompare(b.date));
+    rows=[['Date','Name','Mobile','Address','Particulars','Vehicle','Vehicle Number','GST','Entry','Exit','Rate','Payment','Balance','Mode','Invoice','Status','Feedback','Remark']];
+    s.forEach(r=>rows.push([r.date,r.name,r.mobile,r.addr,r.part,r.veh,r.vehno,r.gst==='gst'?'GST':'Non-GST',r.entry,r.exit,r.rate,r.pay,r.bal,r.mode,r.inv,r.status,r.feed,r.remark]));
+    name='customer-service.csv';
+  }
+  if(which==='book'){
+    const s=[...bookData].sort((a,b)=> a.appt.localeCompare(b.appt));
+    rows=[['Appointment Date','Name','Mobile','Email','Address','Zipcode','Service','Vehicle Colour','Vehicle Number','Booking Date','Booked By','Rate','Advance','Mode','Vehicle Arrived','Delivery Date','Warranty','Remark','Transferred']];
+    s.forEach(b=>rows.push([b.appt,b.name,b.mobile,b.email,b.addr,b.zip,b.service,b.color,b.vehno,b.bookDate,b.bookedBy,b.rate,b.advance,b.mode,b.arrived,b.delivery,b.warranty,b.remark,b.transferred?'Yes':'No']));
+    name='bookings.csv';
+  }
+  if(which==='stock'){
+    const s=[...stockData].sort((a,b)=>a.name.localeCompare(b.name));
+    rows=[['Product','Unit','Opening','Received','Consumed','Closing Stock']];
+    s.forEach(p=>rows.push([p.name,p.unit,p.opening,p.received,p.consumed,p.opening+p.received-p.consumed]));
+    name='inventory.csv';
+  }
+  if(which==='pay'){
+    const ym=document.getElementById('payMonth').value||new Date().toISOString().slice(0,7);
+    rows=[['Month',ym],[],['Employee','Salary','Present','Half','Absent','Days Worked','Earned','Advances','Net Payable']];
+    empData.forEach(e=>{ const p=payFor(e,ym); rows.push([e.name,e.salary,p.present,p.half,p.absent,p.worked,p.earned,p.adv.total,p.net]); });
+    name='payroll-'+ym+'.csv';
+  }
+  if(which==='free'){
+    rows=[['Customer','Mobile','Vehicle','Service','Total Free','Availed','Interval (days)','Start','Next Due','Status']];
+    freeData.forEach(p=>rows.push([p.name,p.mobile,p.veh,p.service,p.total,p.availed,p.interval,p.startDate,p.nextDue||'—',p.availed>=p.total?'Completed':'Active']));
+    name='free-service-plans.csv';
+  }
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=name; a.click();
+}
+
+(async function(){ await checkSession(); })();
+</script>
+</body>
+</html>
